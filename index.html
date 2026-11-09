@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisador Léxico – Lista 2, Ex. 2 L</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Analisador Léxico</h1>
+    <p class="sub">Linguagens Formais · TDE · Lista de Exercícios 2 – Exercício 2, letra L</p>
+    <div class="linguagem">
+      L(G) = { x | x ∈ (a, b, c)* onde o número de <b>a</b>'s é <b>par</b> se x inicia com <b>c</b>;
+      caso contrário, o número de <b>b</b>'s deve ser <b>ímpar</b> }
+    </div>
+  </header>
+
+  <main>
+    <!-- Entrada das sentenças -->
+    <section class="card entrada-card">
+      <label for="entrada">Digite as sentenças (somente minúsculas, separadas por <kbd>espaço</kbd>):</label>
+      <input id="entrada" type="text" autocomplete="off" spellcheck="false" autofocus
+             placeholder="ex.: cab ab b caac ...">
+      <div id="aviso" class="aviso" aria-live="polite"></div>
+
+      <div class="status">
+        <div class="status-item">
+          <span class="rotulo">Sentença atual</span>
+          <span id="sentenca-atual" class="valor mono">ε</span>
+        </div>
+        <div class="status-item">
+          <span class="rotulo">Estado atual</span>
+          <span id="estado-atual" class="valor estado-badge">q0</span>
+        </div>
+        <div class="status-item resultado-item">
+          <span class="rotulo">Resultado</span>
+          <span id="resultado" class="valor resultado neutro">aguardando espaço…</span>
+        </div>
+      </div>
+
+      <div class="rotulo">Caminho percorrido</div>
+      <div id="caminho" class="caminho"></div>
+
+      <button id="btn-limpar" type="button">Limpar tudo</button>
+    </section>
+
+    <div class="grid">
+      <!-- Diagrama do autômato -->
+      <section class="card">
+        <h2>Autômato Finito Determinístico</h2>
+        <svg id="diagrama" viewBox="0 0 760 480" role="img" aria-label="Diagrama do autômato">
+          <defs>
+            <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="ponta"></path>
+            </marker>
+            <marker id="seta-ativa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="ponta-ativa"></path>
+            </marker>
+          </defs>
+
+          <!-- Seta de entrada no estado inicial -->
+          <line x1="30" y1="250" x2="70" y2="250" class="aresta" marker-end="url(#seta)"></line>
+
+          <!-- q0 -> q1 (c) -->
+          <path id="e-q0-q1" class="aresta" d="M124.7,236.8 L373.5,104.1" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="238" y="160">c</text>
+          <!-- q0 -> q3 (a) -->
+          <path id="e-q0-q3" class="aresta" d="M127.6,254.6 L370.4,295.1" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="250" y="265">a</text>
+          <!-- q0 -> q4 (b) -->
+          <path id="e-q0-q4" class="aresta" d="M124,264.4 L374.3,414.6" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="232" y="350">b</text>
+
+          <!-- q1 <-> q2 (a) -->
+          <path id="e-q1-q2" class="aresta" d="M424,76 Q520,30 616,76" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="520" y="44">a</text>
+          <path id="e-q2-q1" class="aresta" d="M616,104 Q520,150 424,104" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="520" y="148">a</text>
+          <!-- laços q1 e q2 (b, c) -->
+          <path id="e-q1-q1" class="aresta" d="M390,64 C372,14 428,14 410,64" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="400" y="20">b, c</text>
+          <path id="e-q2-q2" class="aresta" d="M666,80 C712,62 712,118 666,100" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="728" y="94">b, c</text>
+
+          <!-- q3 <-> q4 (b) -->
+          <path id="e-q3-q4" class="aresta" d="M414,324 Q450,365 414,406" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="446" y="370">b</text>
+          <path id="e-q4-q3" class="aresta" d="M386,406 Q350,365 386,324" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="354" y="370">b</text>
+          <!-- laços q3 e q4 (a, c) -->
+          <path id="e-q3-q3" class="aresta" d="M426,290 C472,272 472,328 426,310" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="490" y="304">a, c</text>
+          <path id="e-q4-q4" class="aresta" d="M426,420 C472,402 472,458 426,440" marker-end="url(#seta)"></path>
+          <text class="rotulo-aresta" x="490" y="434">a, c</text>
+
+          <!-- Estados -->
+          <g id="st-q0" class="estado"><circle cx="100" cy="250" r="28"></circle><text x="100" y="255">q0</text></g>
+          <g id="st-q1" class="estado final"><circle cx="400" cy="90" r="28"></circle><circle class="interno" cx="400" cy="90" r="23"></circle><text x="400" y="95">q1</text></g>
+          <g id="st-q2" class="estado"><circle cx="640" cy="90" r="28"></circle><text x="640" y="95">q2</text></g>
+          <g id="st-q3" class="estado"><circle cx="400" cy="300" r="28"></circle><text x="400" y="305">q3</text></g>
+          <g id="st-q4" class="estado final"><circle cx="400" cy="430" r="28"></circle><circle class="interno" cx="400" cy="430" r="23"></circle><text x="400" y="435">q4</text></g>
+
+          <!-- Estado de erro (sem arestas desenhadas) -->
+          <g id="st-qE" class="estado erro"><circle cx="640" cy="365" r="28"></circle><text x="640" y="370">qE</text></g>
+          <text class="nota" x="640" y="414">qualquer símbolo ∉ {a, b, c}</text>
+          <text class="nota" x="640" y="430">leva ao estado de erro</text>
+        </svg>
+
+        <ul class="legenda">
+          <li><b>q0</b> – estado inicial (sentença vazia)</li>
+          <li><b>q1</b> – iniciou com c, nº de a's par <span class="tag-final">final</span></li>
+          <li><b>q2</b> – iniciou com c, nº de a's ímpar</li>
+          <li><b>q3</b> – não iniciou com c, nº de b's par</li>
+          <li><b>q4</b> – não iniciou com c, nº de b's ímpar <span class="tag-final">final</span></li>
+          <li><b>qE</b> – erro (símbolo fora do alfabeto)</li>
+        </ul>
+      </section>
+
+      <div class="coluna">
+        <!-- Tabela de transições -->
+        <section class="card">
+          <h2>Tabela de Transições (δ)</h2>
+          <table id="tabela">
+            <thead><tr><th>δ</th><th>a</th><th>b</th><th>c</th><th>outra letra</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="obs">→ estado inicial · * estado final</p>
+        </section>
+
+        <!-- Gramática regular -->
+        <section class="card">
+          <h2>Gramática Regular</h2>
+          <pre class="gramatica">S  → aC | bD | b | cA | c
+A  → aB | bA | b | cA | c
+B  → aA | a  | bB | cB
+C  → aC | bD | b  | cC
+D  → aD | a  | bC | cD | c</pre>
+          <p class="obs">S = q0 · A = q1 · B = q2 · C = q3 · D = q4</p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <section class="card">
+      <h2>Sentenças analisadas</h2>
+      <table id="historico">
+        <thead><tr><th>#</th><th>Sentença</th><th>Sequência de estados</th><th>Resultado</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="historico-vazio" class="obs">Nenhuma sentença analisada ainda.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
